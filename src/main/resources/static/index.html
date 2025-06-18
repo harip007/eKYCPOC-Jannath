@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>eKYC Verification UI</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    .section {
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 25px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #34495e;
+    }
+    input, select, button {
+      margin: 5px 0;
+      padding: 12px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
+      outline: none;
+    }
+    select {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 1em;
+    }
+    button {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      padding: 14px;
+      font-size: 16px;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .result {
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      margin-top: 20px;
+      border-left: 4px solid #3498db;
+    }
+    .spinner {
+      border: 4px solid rgba(52,152,219,0.2);
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .success {
+      color: #27ae60;
+      font-weight: 500;
+    }
+    .error {
+      color: #e74c3c;
+      font-weight: 500;
+    }
+    .warning {
+      color: #f39c12;
+      font-weight: 500;
+    }
+    /* Profession dropdown styling */
+    #profession option {
+      padding: 10px;
+      background: white;
+      color: #2c3e50;
+    }
+    #profession option:hover {
+      background: #3498db !important;
+      color: white;
+    }
+    /* Group styling for professions */
+    optgroup {
+      font-weight: bold;
+      color: #3498db;
+      background: #f8f9fa;
+    }
+    optgroup option {
+      font-weight: normal;
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="section">
+  <h2>Professional Registry Verification</h2>
+  <label for="profession">Select Profession:</label>
+  <select id="profession">
+    <option value="">-- Select Your Profession --</option>
+  </select>
+
+  <label for="firstName">First Name:</label>
+  <input type="text" id="firstName" placeholder="Enter first name">
+
+  <label for="lastName">Last Name:</label>
+  <input type="text" id="lastName" placeholder="Enter last name">
+
+  <label for="birthDate">Birth Date:</label>
+  <input type="date" id="birthDate">
+
+  <label for="licenseNo">License Number:</label>
+  <input type="text" id="licenseNo" placeholder="Enter license number">
+
+  <button onclick="submitForm()">Verify</button>
+
+  <div id="progressResult" class="result"></div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const professions = [
+      // Engineering Professions
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjZRLFEK9szIKOxBjr3rkaM8=", "name": "AERONAUTICAL ENGINEER", "category": "Engineering" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjReSlKK9jvySvg3q8B3MpT8=", "name": "AGRICULTURAL AND BIOSYSTEMS ENGINEER", "category": "Engineering" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjZRLFEK9szIKOxBjr3rkaM8=", "name": "ARCHITECT", "category": "Engineering" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjV2Zw7SZHY1xa/PEZhAsMmA=", "name": "CIVIL ENGINEER", "category": "Engineering" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjYd/YTdHN9lAhuyidulKtzo=", "name": "ELECTRONICS ENGINEER", "category": "Engineering" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjf2IJW8FSNO7+bTsNKDGz3M=", "name": "MECHANICAL ENGINEER", "category": "Engineering" },
+
+      // Medical Professions
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjSvCy214NtkVMNR0L9RQZcM=", "name": "DENTIST", "category": "Medical" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjVKE8YikfSPytHmGcyLNrtQ=", "name": "NURSE", "category": "Medical" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLje3YT9v1+nEzm+IxQLfJgRs=", "name": "PHYSICIAN", "category": "Medical" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjSqkmOsV+VMqWRE3B7HsSGI=", "name": "VETERINARIAN", "category": "Medical" },
+
+      // Technical Professions
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjfYmUI9c6kQzCnJts+ZLc2U=", "name": "CERTIFIED PUBLIC ACCOUNTANT", "category": "Technical" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjRyuFzZfRCA/gi7gQxolUh0=", "name": "PHARMACIST", "category": "Technical" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjfOa+oSs5oz3+/aG9RxmokA=", "name": "PROFESSIONAL TEACHER", "category": "Technical" },
+
+      // Other Professions
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjZiv8rnPz280+EnvnrIkKtY=", "name": "REGISTERED ELECTRICAL ENGINEER", "category": "Other" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjYkeqn4zjlTf0jLV77gdxCI=", "name": "MASTER PLUMBER", "category": "Other" },
+      { "profId": "Jd2sFKTAvbcBhhCyY/iLjXBfz42bv9G9eu/7NiZEdM0=", "name": "SANITARY ENGINEER", "category": "Other" }
+    ];
+
+    // Group professions by category
+    const groupedProfessions = professions.reduce((groups, profession) => {
+      const group = groups.find(g => g.category === profession.category);
+      if (group) {
+        group.professions.push(profession);
+      } else {
+        groups.push({
+          category: profession.category,
+          professions: [profession]
+        });
+      }
+      return groups;
+    }, []);
+
+    const professionSelect = document.getElementById("profession");
+
+    // Add grouped options
+    groupedProfessions.forEach(group => {
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = group.category;
+
+      group.professions.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.profId;
+        option.textContent = p.name;
+        optgroup.appendChild(option);
+      });
+
+      professionSelect.appendChild(optgroup);
+    });
+  });
+
+  const baseUrl = "http://localhost:8080/api/v1/user-info";
+  let pollInterval;
+
+  function formatDate(inputDate) {
+    const [year, month, day] = inputDate.split("-");
+    return `${month}/${day}/${year}`;
+  }
+
+  function submitForm() {
+    const profId = document.getElementById("profession").value;
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const birthDate = document.getElementById("birthDate").value;
+    const licenseNo = document.getElementById("licenseNo").value.trim();
+
+    let category = "";
+    const body = { professionId: profId };
+
+    if (firstName && lastName && profId && !licenseNo && !birthDate) {
+      category = "BY NAME";
+      body.category = category;
+      body.firstName = firstName;
+      body.lastName = lastName;
+    } else if (licenseNo && birthDate && profId && !firstName && !lastName) {
+      category = "BY LICENSE NO";
+      body.category = category;
+      body.licenseNo = licenseNo;
+      body.birthDate = formatDate(birthDate);
+    } else {
+      document.getElementById("progressResult").innerHTML = '<span class="error">❗ Please enter either Name + Profession OR License No + Birth Date + Profession</span>';
+      return;
+    }
+
+    document.getElementById("progressResult").innerHTML = '<span class="spinner"></span><span class="warning">Submitting verification request...</span>';
+
+    fetch(`${baseUrl}/add`, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    .then(res => res.json())
+    .then(data => {
+      const { message, userKey, status } = data.data;
+
+      if (status === "COMPLETED") {
+        // Found in in-house database
+        document.getElementById("progressResult").innerHTML =
+          `<span class="success">✅ Verification Complete: ${message}</span>`;
+      } else if (status === "INITIATED") {
+        // Not found in in-house, start scraping
+        document.getElementById("progressResult").innerHTML =
+          `<span class="success">🔍 ${message}</span><br>
+           <span class="spinner" id="spin"></span>
+           <span class="warning">Checking official databases...</span>`;
+        startPolling(userKey);
+      }
+    })
+    .catch(err => {
+      document.getElementById("progressResult").innerHTML =
+        `<span class="error">❌ Error: ${err.message}</span>`;
+    });
+  }
+
+  function startPolling(userKey) {
+    if (!userKey) return;
+
+    pollInterval = setInterval(() => checkProgress(userKey), 10000);
+  }
+
+  async function checkProgress(userKey) {
+    try {
+      const res = await fetch(`${baseUrl}/scraping/progress?userKey=${userKey}`);
+      const data = await res.json();
+
+      const { status, percentage } = data;
+
+      if (status === "RECORD FOUND" && percentage === 100) {
+        clearInterval(pollInterval);
+        document.getElementById("progressResult").innerHTML =
+          `<span class="success">✅ Verification Successful: Record found in official database</span>`;
+      } else if (status === "NO RECORD FOUND" && percentage === -1) {
+        clearInterval(pollInterval);
+        document.getElementById("progressResult").innerHTML =
+          `<span class="error">❌ Verification Failed: No matching record found</span>`;
+      } else {
+        // Update progress
+        document.getElementById("progressResult").innerHTML =
+          `<span class="warning">🔍 Searching official databases...</span><br>
+           <span class="spinner" id="spin"></span>
+           <span>This may take a few moments...</span>`;
+      }
+    } catch (err) {
+      clearInterval(pollInterval);
+      document.getElementById("progressResult").innerHTML =
+        `<span class="error">❌ Error checking verification status: ${err.message}</span>`;
+    }
+  }
+</script>
+</body>
+</html>
